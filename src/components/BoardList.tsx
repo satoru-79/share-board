@@ -17,6 +17,8 @@ const BoardList:React.FC<Props> = (props) => {
 
     //ボードデータを評価順に格納するstate
     const [goodedBoards, setGoodedBoards] = useState<BoardObject[]>([]);
+
+    const [searchKey, setSearchKey] = useState("");
    
 
 
@@ -40,6 +42,12 @@ const BoardList:React.FC<Props> = (props) => {
         else setDisplayBoards(newBoard);
         setFilter(filter);
         setSort(sort);
+    }
+
+    const searchBoard = (e:any) => {
+        e.preventDefault();
+        const boards = [...props.defaultBoards]
+        setDisplayBoards(boards.filter((board) => board.key === searchKey))
     }
 
     return (
@@ -78,7 +86,7 @@ const BoardList:React.FC<Props> = (props) => {
                         <label htmlFor={`${props.name}-others`}>その他</label>
                     </div>
                 </div>
-                <div className='flex flex-row gap-3 pb-3'>
+                <div className='flex flex-row gap-3 '>
                     <p className='font-bold'>ソート</p>
                     <div className='flex flex-row gap-1'>
                         <input type="radio" id={`${props.name}-newest`} name={`${props.name}2`} defaultChecked
@@ -96,6 +104,19 @@ const BoardList:React.FC<Props> = (props) => {
                         />
                         <label htmlFor={`${props.name}-rated`}>評価順</label>
                     </div>
+                </div>
+                <div className='flex flex-row gap-3 pb-3  items-center w-[100%]'>
+                    <p className='font-bold'>ボードを検索</p>
+                    <form action=""
+                          onSubmit={(e) => searchBoard(e)}
+                          className="w-1/3"
+                    >
+                        <input type="text" className="rounded-l-md py-1 px-2 w-[70%]"
+                               onChange={(e) => setSearchKey(e.target.value)}
+                        />
+                        <input type="submit" value="検索" className="bg-slate-200 btn hover:opacity-70 px-2 py-1 rounded-r-md"/>
+                    </form>
+                    <p className="w-1/2">※ボード閲覧時のURLから「key=⚪︎⚪︎」の⚪︎⚪︎をコピーして検索できます</p>
                 </div>
             </div>
             <div className='w-full p-3 border-blue-950 bg-blue-950 h-[100vh] overflow-scroll rounded-b-2xl'>

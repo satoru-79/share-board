@@ -1,4 +1,6 @@
 import Header from "./components/Header"
+import {auth} from "./firebase"
+import { useAuthState } from "react-firebase-hooks/auth";
 
 
 const Information = () => {

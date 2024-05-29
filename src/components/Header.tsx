@@ -65,14 +65,15 @@ export const SignInButton = () => {
   const SignOutButton = () => {
   
     return(
-      <div className='mr-2'>
-        <p className='signInButton'
-           onClick={() => {
-            signOut(auth);
-          }}
+      <div className='mr-2 '>
+        <Link to={'/'}
+              className='signInButton'
+              onClick={() => {
+                signOut(auth);
+              }}
         >
           サインアウト
-        </p>
+        </Link>
       </div>
   )
   }

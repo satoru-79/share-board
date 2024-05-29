@@ -26,7 +26,6 @@ const LinkToBoard:React.FC<Props> = (props) => {
 
     useEffect(() => {
         if (auth.currentUser) {
-            console.log(props.board.good.indexOf(auth.currentUser.uid))
             if (props.board.good.indexOf(auth.currentUser.uid) >= 0) {
                 setGooded(true);
             } else {
@@ -70,18 +69,14 @@ const LinkToBoard:React.FC<Props> = (props) => {
             updateDoc(doc(db,'boards', props.board.key), {
                 good: arrayRemove(auth.currentUser?.uid)
             })
-            console.log('gooded');
         } else {
             updateDoc(doc(db,'boards', props.board.key), {
                 good: arrayUnion(auth.currentUser?.uid)
             })
-            console.log('!gooded');
         }
-        console.log(props.board.good);
         setGooded(!gooded)
 
     }
-    console.log(gooded);
 
 
     return (
@@ -93,7 +88,7 @@ const LinkToBoard:React.FC<Props> = (props) => {
              }}               
         >
             <Link to={
-                props.type === 'own' ? `/edit_board?key=${props.board.key}`
+                props.type === 'own' ? `/edit_board?key=${props.board.key}&user=${auth.currentUser?.uid}`
                                       : `/view_board?key=${props.board.key}`   
                 }
                 state={{
@@ -135,10 +130,8 @@ const LinkToBoard:React.FC<Props> = (props) => {
                 </div>
             </Link> 
             { props.type !== 'own' &&
-                <Link to ={`/user_page?user=${props.board.userId}`}
+                <Link to ={`/user_page?username=${props.board.userName}&userid=${props.board.userId}`}
                       state={{
-                        id: props.board.userId,
-                        name: props.board.userName,
                         boards: props.defaultBoards,
                       }}
                       className='font-black text-sm text-white hover:border-b border-white absolute top-[65%]'
