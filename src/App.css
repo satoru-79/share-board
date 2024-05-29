@@ -1,4 +1,22 @@
-.App {
-  text-align: center;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+@layer components {
+  .btn {
+    @apply cursor-pointer transition duration-300 ;
+  }
+
+  .arrow-img {
+    @apply h-20 p-3 mx-2 box-border hover:cursor-pointer hover:border-black hover:border
+  }
+
+  .signInButton {
+    @apply font-black text-white w-full h-full py-2 px-4 rounded-full border border-blue-950
+          bg-blue-950 btn hover:bg-white hover:text-blue-950 
+  }
+
+  .drawerButton {
+    @apply border border-black rounded-md bg-white w-1/4 btn hover:bg-black hover:text-white
+  }
+}
