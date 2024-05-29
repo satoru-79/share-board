@@ -34,7 +34,6 @@ const Preset:React.FC<Props> = (props) => {
     }
 
     useEffect(() => {
-        console.log('preset,useEffect');
         getMyPreset();
 
     },[])
@@ -61,7 +60,6 @@ const Preset:React.FC<Props> = (props) => {
     }
 
     const callPreset = (players:Player[]) => {
-        console.log('call実行');
         players.map((player) => {
             player.color = props.player.color;
             player.side = props.player.side;
@@ -72,7 +70,6 @@ const Preset:React.FC<Props> = (props) => {
     }
 
     const deletePreset = (key:string) => {
-        console.log('deletePreset');
         deleteDoc(doc(db,'preset',key));
         setMyPreset(myPreset.filter((preset:any) => preset.key !== key))
     }

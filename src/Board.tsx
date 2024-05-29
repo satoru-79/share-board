@@ -12,9 +12,12 @@ import { v4 as uuidv4 } from 'uuid'
 import CreateBoard from './CreateBoard'
 import Preset from './components/Preset';
 import { useLocation } from 'react-router-dom';
-import {auth} from './firebase'
-import { BoardData } from './Home';
+import {auth, db} from './firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { BoardData, BoardObject } from './Home';
 import ArrowList from './components/ArrowList';
+import { useSearchParams } from 'react-router-dom';
+import {collection, getDocs,  } from 'firebase/firestore'
 
 
 export type Player = {
@@ -69,186 +72,210 @@ type Props = {
 
 const Board:React.FC<Props> = (props) => {
 
-    const [update,setUpdate]=useState<boolean>(false)
+  const [user] = useAuthState(auth);
 
-    //Linkから飛んできた際に渡された情報を受け取る。
-    const location = useLocation();
-    const [boardKey, setBoardKey] = useState("");
-    const [boardTitle, setBoardTitle] = useState("");
-    const [currentBoard, setCurrentBoard] = useState<BoardData>(
-      {
-        homePlayers:[],
-        awayPlayers:[],
-        arrows:[],
-        court:0,
-        ballPosition:{ x:0, y:0 },
-        comment:""
-      }
+  const [searchParams] = useSearchParams();
 
-    );
+  //Linkから飛んできた際に渡された情報を受け取る。
+  const location = useLocation();
+
+  const displayable = ((props.type === "create" || props.type === "edit") && (auth.currentUser?.uid === searchParams.get("user"))) ||
+                      (props.type === "" ) || 
+                      (( props.type === "share" || props.type == "save") && (user)) 
+                      
 
 
-    //ボード編集のdrawerの開閉を管理する変数--//
-    const [open, setOpen] = useState(false);
-
-    //-Tab関連の変数--//
-    const [value, setValue] = useState<0 | 1>(0);
-    const handleChange = (event:any, newValue:0 | 1) => {
-        if ((props.type !== 'share') && ( props.type !== 'save')) {
-          setValue(newValue);
-          setCurrentBoard({...currentBoard, court: newValue})
-        }
+  const [boardKey, setBoardKey] = useState("");
+  const [boardTitle, setBoardTitle] = useState("");
+  const [currentBoard, setCurrentBoard] = useState<BoardData>(
+    {
+      homePlayers:[],
+      awayPlayers:[],
+      arrows:[],
+      court:0,
+      ballPosition:{ x:0, y:0 },
+      comment:""
     }
+  );
 
-    //--プレイヤー情報の変更に使う変数--//
-    const [editFormVisible , setEditFormVisible] = useState<boolean>(false);
-    const [editTarget, setEditTarget] = useState<Player>({key:'', name:"", number:"", side:'home', color: {code:"red", isblack: false}, position: {x:0 , y:0 }});
 
-    /*--------------------------//
-    プレイヤーの情報を管理する変数・関数
-    = フォームの内容が変化するたびにplayerステートを更新し、
-    送信されたタイミングでcuurentBoardのplayersステートに追加。
-    //----------------------------*/
-    const [homePlayer, setHomePlayer] = useState<Player>({key:'', name:"", number:"", side:'home', color: {code:"red", isblack: false,}, position: {x:0 , y:0 }})
-    const [awayPlayer, setAwayPlayer] = useState<Player>({key:'', name:"", number:"", side:'away', color: {code:"blue", isblack: false}, position: {x:0 , y:0 }})
+  //ボード編集のdrawerの開閉を管理する変数--//
+  const [open, setOpen] = useState(false);
+
+  //-Tab関連の変数--//
+  const [value, setValue] = useState<0 | 1>(0);
+  const handleChange = (event:any, newValue:0 | 1) => {
+      if ((props.type !== 'share') && ( props.type !== 'save')) {
+        setValue(newValue);
+        setCurrentBoard({...currentBoard, court: newValue})
+      }
+  }
+
+  //--プレイヤー情報の変更に使う変数--//
+  const [editFormVisible , setEditFormVisible] = useState<boolean>(false);
+  const [editTarget, setEditTarget] = useState<Player>({key:'', name:"", number:"", side:'home', color: {code:"red", isblack: false}, position: {x:0 , y:0 }});
+
+  /*--------------------------//
+  プレイヤーの情報を管理する変数・関数
+  = フォームの内容が変化するたびにplayerステートを更新し、
+  送信されたタイミングでcuurentBoardのplayersステートに追加。
+  //----------------------------*/
+  const [homePlayer, setHomePlayer] = useState<Player>({key:'', name:"", number:"", side:'home', color: {code:"red", isblack: false,}, position: {x:0 , y:0 }})
+  const [awayPlayer, setAwayPlayer] = useState<Player>({key:'', name:"", number:"", side:'away', color: {code:"blue", isblack: false}, position: {x:0 , y:0 }})
     
 
-    const changePlayerInfo = () => {
-      if (editTarget.side === 'home') {
-        setCurrentBoard(
-          {...currentBoard, homePlayers:
-            currentBoard.homePlayers.map((player) => player.key === editTarget.key ? editTarget : player)}  
-        )
-      } else {
-        setCurrentBoard(
-          {...currentBoard, awayPlayers:
-            currentBoard.awayPlayers.map((player) => player.key === editTarget.key ? editTarget : player)
-          }  
-        )
-      }
-
-      setEditFormVisible(false);
-    }
-
-    const deletePlayer = () => {
-      if (editTarget.side === 'home') {
-        setCurrentBoard(
+  const changePlayerInfo = () => {
+    if (editTarget.side === 'home') {
+      setCurrentBoard(
         {...currentBoard, homePlayers:
-          currentBoard.homePlayers.filter((player) => player.key !== editTarget.key )
-        } 
-        )
-      } else {
-        setCurrentBoard(
+          currentBoard.homePlayers.map((player) => player.key === editTarget.key ? editTarget : player)}  
+      )
+    } else {
+      setCurrentBoard(
         {...currentBoard, awayPlayers:
-          currentBoard.awayPlayers.filter((player) => player.key !== editTarget.key)
-        }
-        )
+          currentBoard.awayPlayers.map((player) => player.key === editTarget.key ? editTarget : player)
+        }  
+      )
+    }
+    setEditFormVisible(false);
+  }
+
+  const deletePlayer = () => {
+    if (editTarget.side === 'home') {
+      setCurrentBoard(
+      {...currentBoard, homePlayers:
+        currentBoard.homePlayers.filter((player) => player.key !== editTarget.key )
+      } 
+      )
+    } else {
+      setCurrentBoard(
+      {...currentBoard, awayPlayers:
+        currentBoard.awayPlayers.filter((player) => player.key !== editTarget.key)
       }
-      setEditFormVisible(false);
+      )
     }
+    setEditFormVisible(false);
+  }
 
 
-    /*------------------------//
-    矢印を管理する変数・関数
-    = 形や線のタイプなどを選択するごとにarrowステートを更新し、追加ボタンが押された時にarrowsステートに追加。 
-    //------------------------*/
-    const [arrow, setArrow] = useState<ArrowObject>({key:"",path:'straight',color:'black',startPlug:'behind',endPlug:'arrow1',dash:false,reverse:false,endLabel:"",startLabel:"",startPosition: {x: 0,y: 0}, endPosition: {x: 0,y: 0}});
-    const [arrows, setArrows] = useState<ArrowObject[]>([]);
+  /*------------------------//
+  矢印を管理する変数・関数
+  = 形や線のタイプなどを選択するごとにarrowステートを更新し、追加ボタンが押された時にarrowsステートに追加。 
+  //------------------------*/
+  const [arrow, setArrow] = useState<ArrowObject>({key:"",path:'straight',color:'black',startPlug:'behind',endPlug:'arrow1',dash:false,reverse:false,endLabel:"",startLabel:"",startPosition: {x: 0,y: 0}, endPosition: {x: 0,y: 0}});
+  const [arrows, setArrows] = useState<ArrowObject[]>([]);
   
-    const createArrow = () => {
-      const copyArrow = arrow;
-      if (copyArrow.reverse) setCurrentBoard({...currentBoard, arrows:   
-      [...currentBoard.arrows, {...copyArrow,key:uuidv4(),endPlug:'behind',startPlug:copyArrow.endPlug, startLabel:copyArrow.endLabel, endLabel: ""}]})
-      else setCurrentBoard({...currentBoard, arrows : [...currentBoard.arrows, {...copyArrow, key:uuidv4()}]});
-    }
+  const createArrow = () => {
+    const copyArrow = arrow;
+    if (copyArrow.reverse) setCurrentBoard({...currentBoard, arrows:   
+    [...currentBoard.arrows, {...copyArrow,key:uuidv4(),endPlug:'behind',startPlug:copyArrow.endPlug, startLabel:copyArrow.endLabel, endLabel: ""}]})
+    else setCurrentBoard({...currentBoard, arrows : [...currentBoard.arrows, {...copyArrow, key:uuidv4()}]});
+  }
 
 
     
 
-    const updateBallPosition = (e:DraggableEvent, data: DraggableData) => { 
-      setCurrentBoard({...currentBoard, ballPosition: {x: data.x/getCourtSize('width') , y:data.y/getCourtSize('height')}});
-      
-    }
+  const updateBallPosition = (e:DraggableEvent, data: DraggableData) => { 
+    setCurrentBoard({...currentBoard, ballPosition: {x: data.x/getCourtSize('width') , y:data.y/getCourtSize('height')}});
+    
+  }
 
-    useEffect(() => {
-      /*----------------------------------------------//
-      作成済みのボードや公開中のボードを開く時に、
-      すでに決まっているプレイヤーや矢印の情報をステートに代入する
-      //----------------------------------------------*/
-      if (location.state.boards) {
+  const getBoardInfo = () => {
+    const boardRef = collection(db,'boards');
+    getDocs(boardRef).then((snapShot) => {
+        const targetData = snapShot.docs.find((doc) => doc.data().key === searchParams.get("key"))?.data();
+        console.log(targetData);
+        setBoards(targetData?.boards)
+        setCurrentBoard(targetData?.boards[0])
+        setBoardKey(targetData?.key);
+        setBoardTitle(targetData?.title);
+    })
+  }
+
+  useEffect(() => {
+    /*----------------------------------------------//
+    作成済みのボードや公開中のボードを開く時に、
+    すでに決まっているプレイヤーや矢印の情報をステートに代入する
+    //----------------------------------------------*/
+    if (location.state) {
+      if (location.state.boards) { 
         setBoards(location.state.boards);
         setCurrentBoard(location.state.boards[0]);
         setBoardKey(location.state.key);
         setBoardTitle(location.state.title);
       }
-
-    },[])
-
-    useEffect(() => {
-      if (currentBoard.court === 0) {
-        setValue(0);
-      } else {
-        setValue(1);
-      }
-      setArrows(currentBoard.arrows);
-    },[currentBoard])
-
-    //ボード全体の情報を入れるステート
-    const [boards, setBoards] = useState<BoardData[]>([
-      {
-        homePlayers:[],
-        awayPlayers:[],
-        arrows:[],
-        court: 0,
-        ballPosition:{x:0,y:0},
-        comment:""
-      }
-    ]);
-
-    //何枚目のボードを操作しているかを管理する変数
-    const [page, setPage] = useState<number>(0);
-
-
-    //次のページに遷移する関数
-    const toNextPage = () => {
-      const copyBoards = [...boards];
-      copyBoards[page] = currentBoard;
-      const newPage = page + 1; 
-      if (page < 9) {
-        if ((copyBoards.length === newPage) && ((props.type === 'create') || (props.type === 'edit'))){
-          copyBoards.push(currentBoard);
-        }
-        setBoards(copyBoards);
-        if (((props.type === 'create') || (props.type === 'edit') ||(boards.length !== newPage))) {
-          setPage(newPage);
-          setCurrentBoard(copyBoards[newPage]);
-        }
-      }
-      setUpdate(update?false:true);
+    } else {
+      getBoardInfo()
     }
+  },[])
 
-    //前のページに遷移する関数
-    const toPrevPage = () => {
-      const copyBoards = [...boards];
-      copyBoards[page] = currentBoard;
-      setPage(page - 1);
-      setCurrentBoard(copyBoards[page - 1]);
+  useEffect(() => {
+    if (currentBoard.court === 0) {
+      setValue(0);
+    } else {
+      setValue(1);
+    }
+    setArrows(currentBoard.arrows);
+  },[currentBoard])
+
+  //ボード全体の情報を入れるステート
+  const [boards, setBoards] = useState<any>([
+    {
+      homePlayers:[],
+      awayPlayers:[],
+      arrows:[],
+      court: 0,
+      ballPosition:{x:0,y:0},
+      comment:""
+    }
+  ]);
+
+  //何枚目のボードを操作しているかを管理する変数
+  const [page, setPage] = useState<number>(0);
+
+
+  //次のページに遷移する関数
+  const toNextPage = () => {
+    const copyBoards = [...boards];
+    copyBoards[page] = currentBoard;
+    const newPage = page + 1; 
+    if (page < 9) {
+      if ((copyBoards.length === newPage) && ((props.type === 'create') || (props.type === 'edit'))){
+        copyBoards.push(currentBoard);
+      }
       setBoards(copyBoards);
-    }
-
-    const deleteCurrentBoard = () => {
-      setBoards(boards.filter((board,index) => index !== page))
-      if (page !== 0) {
-        setCurrentBoard(boards[page - 1]);
-        setPage(page - 1);
-      } else {
-        setCurrentBoard(boards[page + 1]);
+      if (((props.type === 'create') || (props.type === 'edit') ||(boards.length !== newPage))) {
+        setPage(newPage);
+        setCurrentBoard(copyBoards[newPage]);
       }
     }
+  }
+
+  //前のページに遷移する関数
+  const toPrevPage = () => {
+    const copyBoards = [...boards];
+    copyBoards[page] = currentBoard;
+    setPage(page - 1);
+    setCurrentBoard(copyBoards[page - 1]);
+    setBoards(copyBoards);
+  }
+
+  const deleteCurrentBoard = () => {
+    setBoards(boards.filter((board:BoardData,index:number) => index !== page))
+    if (page !== 0) {
+      setCurrentBoard(boards[page - 1]);
+      setPage(page - 1);
+    } else {
+      setCurrentBoard(boards[page + 1]);
+    }
+  }
+
+  console.log(user);
+  console.log(searchParams.get("user"));
 
 
     
-    
+  if (displayable) {
     return(
       <div>
         <div id='tab-area' className='w-full '>  
@@ -718,8 +745,15 @@ const Board:React.FC<Props> = (props) => {
           </p>
         </div>
         }
-      </div>             
+      </div>        
     )
+  } else {
+    return (
+      <div>
+
+      </div>  
+    )
+  }
 }
 
 export default Board;
