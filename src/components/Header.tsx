@@ -15,7 +15,7 @@ const Header = () => {
         <Link to={'/'}
               className="flex ml-2 h-12 btn"
         >
-          <div className="h-full">
+          <div className="h-full aspect-square">
             <img src='images/shareboard-icon.png' alt='' className='h-full w-full' />
           </div>
           <div className="h-full"

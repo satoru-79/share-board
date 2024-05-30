@@ -38,7 +38,7 @@ const ArrowSetting:React.FC<Props> = (props) => {
             { props.urls.map((url,index) => {
                 return(
                     <img src={url} alt="" 
-                         className="arrow-img"
+                         className="arrow-img z-1"
                          style={{border: activeImg === index ? '2px solid black': undefined}}
                          onClick={() => {
                             setArrowOption(props.property,index);

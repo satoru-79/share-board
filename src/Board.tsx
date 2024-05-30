@@ -466,7 +466,7 @@ const Board:React.FC<Props> = (props) => {
         <Drawer anchor='right' open={open} variant='persistent'>
           <div className='w-[200px] bg-slate-300'>
             <div  id='drawer-title'
-                  className=' p-2 w-[200px] h-[50px] flex items-center justify-between bg-black fixed'
+                  className=' p-2 w-[200px] h-[50px] flex items-center justify-between bg-black fixed z-90'
             >
               <p className='text-2xl text-white w-1/5 btn text-center'
                  onClick={() => {setOpen(!open);setEditFormVisible(false)}}
