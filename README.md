@@ -13,5 +13,9 @@ https://shareboard-26307.firebaseapp.com
    ・ Firestore Database <br>
    ・ Hosting <br>
 
+### 機能
+   * Googleアカウントによるユーザー登録、ログイン機能 
+   * 作成したボードを投稿する機能
+
 
 
