@@ -7,5 +7,11 @@ https://shareboard-26307.firebaseapp.com
 ・ React 18.2.0 <br>
  ・ TypeScript 4.9.5 <br>
  ・ Tailwind CSS 3.4.3 <br>
- ・ node.js <br>
+ ・ node.js 20.11.0<br>
+ ・ FireBase 10.11.0<br>
+  ⚪︎ Authentication
+  ⚪︎ Firestore Database
+  ⚪︎ Hosting
+
+
 
