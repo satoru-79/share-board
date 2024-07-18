@@ -18,6 +18,7 @@ import { BoardData, BoardObject } from './Home';
 import ArrowList from './components/ArrowList';
 import { useSearchParams } from 'react-router-dom';
 import {collection, getDocs,  } from 'firebase/firestore'
+import { PropertyDescriptorParsingType } from 'html2canvas/dist/types/css/IPropertyDescriptor';
 
 
 export type Player = {
@@ -290,15 +291,20 @@ const Board:React.FC<Props> = (props) => {
             <Tab label="HALF COURT" sx={{color:'white'}} />
             
             <div className='flex items-center  justify-end w-full'>
-              <div className='h-full flex justify-center items-center w-[20%]
-                              absolute left-[40%]'
+              <div className='h-full flex justify-center items-center 
+                             absolute left-[30%]'
               >
-                <p className='font-black text-white'>ページ : {page + 1} / {boards.length}</p>
+                <p className='text-white font-black'
+                   style={{fontSize: window.innerWidth < 850 ? 12: 16}}
+                >
+                  ID : {boardKey}
+                </p>
               </div>
               { (props.type === 'create' || props.type === 'edit') &&
-                <p className='h-8 bg-red-500 absolute left-[60%] flex items-center px-2 btn 
+                <p className='bg-red-500 absolute left-[70%] flex items-center px-2 py-1 btn 
                               rounded-full hover:bg-white text-white hover:text-red-500 font-black'
                    onClick={() => boards.length !== 1 && deleteCurrentBoard()}
+                   style={{fontSize: window.innerWidth < 850 ? 12: 16}}
                 > 
                   このページを削除
                 </p>
@@ -441,6 +447,10 @@ const Board:React.FC<Props> = (props) => {
               </div>
             )}
           </div>   
+          <div className='flex justify-center items-center w-[100%]'
+              >
+                <p className='font-black text-black'>ページ : {page + 1} / {boards.length}</p>
+          </div>
           { props.type !== '' &&
           <div className='h-[50vh] w-full bg-white flex justify-center mt-10 mb-20'
                
