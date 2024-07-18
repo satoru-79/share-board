@@ -32,7 +32,7 @@ const ArrowSetting:React.FC<Props> = (props) => {
 
     return (
         <div id='arrow-type-and-color-images'
-             className='flex flex-row overflow-scroll mt-3 '
+             className='flex flex-row overflow-x-scroll mt-3 '
              key={uuidv4()}
         >
             { props.urls.map((url,index) => {

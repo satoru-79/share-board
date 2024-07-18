@@ -116,10 +116,10 @@ const LinkToBoard:React.FC<Props> = (props) => {
                         }
                     </div>
                     <div className='flex justify-between items-center flex-col text-center w-full h-[30%] flex-nowrap overflow-hidden'>
-                        <p className='font-black text-base h-[50%] flex overflow-scroll text-white w-full items-center justify-center'>
+                        <p className='font-black text-base h-[50%] flex text-white w-full items-center justify-center'>
                             {props.board.title}
                         </p>
-                        <div className='flex flex-row w-full h-[50%] overflow-hidden justify-center items-center'>
+                        <div className='flex flex-row w-full h-[50%] justify-center items-center'>
                             { props.type === 'own' && 
                             <p className='font-black text-sm text-white'>
                                 {props.board.ispublic ? '公開中': '非公開'}

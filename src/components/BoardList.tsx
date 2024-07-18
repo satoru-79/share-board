@@ -106,7 +106,7 @@ const BoardList:React.FC<Props> = (props) => {
                     </div>
                 </div>
                 <div className='flex flex-row gap-3 pb-3  items-center w-[100%]'>
-                    <p className='font-bold'>ボードを検索</p>
+                    <p className='font-bold'>ID検索</p>
                     <form action=""
                           onSubmit={(e) => searchBoard(e)}
                           className="w-1/3"
@@ -116,7 +116,6 @@ const BoardList:React.FC<Props> = (props) => {
                         />
                         <input type="submit" value="検索" className="bg-slate-200 btn hover:opacity-70 px-2 py-1 rounded-r-md"/>
                     </form>
-                    <p className="w-1/2">※ボード閲覧時のURLから「key=⚪︎⚪︎」の⚪︎⚪︎をコピーして検索できます</p>
                 </div>
             </div>
             <div className='w-full p-3 border-blue-950 bg-blue-950 h-[100vh] overflow-scroll rounded-b-2xl'>
