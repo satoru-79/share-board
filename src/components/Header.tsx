@@ -1,4 +1,4 @@
-import {signInWithRedirect, signOut} from 'firebase/auth';
+import {signInWithPopup, signOut} from 'firebase/auth';
 import {auth, provider} from '../firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { Link } from 'react-router-dom';
@@ -40,7 +40,7 @@ export default Header
 export const SignInButton = () => {
 
     const signInWithGoogle = () => {
-        signInWithRedirect(auth,provider)
+        signInWithPopup(auth,provider)
         .catch((error) => {
           if (error.code !== 'auth/cancelled-popup-request') {
             // キャンセル以外のエラーの場合、エラー処理を行う
